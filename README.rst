@@ -15,7 +15,7 @@ them access to digital goods.
 
 
 Vingd API for Python
-====================
+--------------------
 
 Vingd API enables you to register Vingd objects you're selling, create Vingd
 purchase orders, verify and commit Vingd purchases. You can also reward users,
@@ -24,9 +24,10 @@ docs and demos, see `docs.vingd.com`_.
 
 
 Mini Example
-============
+------------
 
 ::
+
    from vingd import Vingd
    
    v = Vingd(username="<vingd-login-username>", password="<vingd-login-password>")
