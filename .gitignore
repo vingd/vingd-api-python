@@ -1,4 +1,7 @@
 env/
+build/
+dist/
+vingd.egg-info/
 *.pyc
 *.*~
 *.orig
