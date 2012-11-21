@@ -3,6 +3,7 @@ build/
 dist/
 vingd.egg-info/
 docs/_build
+MANIFEST
 *.pyc
 *.*~
 *.orig
