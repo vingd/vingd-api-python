@@ -2,6 +2,7 @@ env/
 build/
 dist/
 vingd.egg-info/
+docs/_build
 *.pyc
 *.*~
 *.orig
