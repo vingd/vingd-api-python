@@ -521,7 +521,8 @@ class Vingd:
         :raises GeneralException:
         
         :resource:
-            ``registry/objects[/<oid>][/since=<since>][/until=<until>][/last=<last>][/first=<first>]``
+            ``registry/objects[/<oid>]``
+            ``[/since=<since>][/until=<until>][/last=<last>][/first=<first>]``
         :access: authorized users (only objects owned by the authenticated user
             are returned)
         """
@@ -646,7 +647,8 @@ class Vingd:
                     'vid_encoded': <voucher_string_id>,
                     'amount_allocated': <int_cents | None if not allocated>,
                     'amount_vouched': <int_cents>,
-                    'id_fort_transfer': <id_of_allocating_transfer | None if not allocated>,
+                    'id_fort_transfer': <id_of_allocating_transfer |
+                                         None if not allocated>,
                     'fee': <int_cents>,
                     'uid_from': <source_account_uid>,
                     'uid_proxy': <broker_id>,
@@ -724,7 +726,9 @@ class Vingd:
         :raises GeneralException:
         
         :resource:
-            ``vouchers[/<vid_encoded>][/from=<uid_from>][/to=<uid_to>][/valid_after=<valid_after>][/valid_before=<valid_before>][/last=<last>][/first=<first>]``
+            ``vouchers[/<vid_encoded>][/from=<uid_from>][/to=<uid_to>]``
+            ``[/valid_after=<valid_after>][/valid_before=<valid_before>]``
+            ``[/last=<last>][/first=<first>]``
         :access: authorized users (ACL flag: ``voucher.get``)
         """
         resource = 'vouchers'
@@ -800,7 +804,8 @@ class Vingd:
             ``vouchers/history[/<vid_encoded>][/from=<uid_from>][/to=<uid_to>]``
             ``[/vid=<vid>][/action=<action>][/last=<last>][/first=<first>]``
             ``[/valid_after=<valid_after>][/valid_before=<valid_before>]``
-            ``[/create_after=<create_after>][/create_before=<create_before>][/gid=<group_id>]``
+            ``[/create_after=<create_after>][/create_before=<create_before>]``
+            ``[/gid=<group_id>]``
         :access: authorized users (ACL flag: ``voucher.history``)
         """
         resource = 'vouchers/history'
@@ -868,7 +873,9 @@ class Vingd:
         :raises GeneralException:
         
         :resource:
-            ``vouchers[/<vid_encoded>][/from=<uid_from>][/to=<uid_to>][/valid_after=<valid_after>][/valid_before=<valid_before>][/last=<last>][/first=<first>]``
+            ``vouchers[/<vid_encoded>][/from=<uid_from>][/to=<uid_to>]``
+            ``[/valid_after=<valid_after>][/valid_before=<valid_before>]``
+            ``[/last=<last>][/first=<first>]``
         :access: authorized users (ACL flag: ``voucher.revoke``)
         """
         resource = 'vouchers'
