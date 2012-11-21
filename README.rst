@@ -41,7 +41,7 @@ Or, to install from GitHub source: ::
 Example Usage
 -------------
 
-::
+.. code-block:: python
 
    from vingd import Vingd
    
