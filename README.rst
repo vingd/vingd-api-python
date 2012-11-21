@@ -38,8 +38,8 @@ Or, to install from GitHub source: ::
    $ python setup.py install
 
 
-Mini Example
-------------
+Example Usage
+-------------
 
 ::
 
@@ -53,7 +53,7 @@ Mini Example
    vouchers = v.get_vouchers()
    print "I have %d active vouchers." % len(vouchers)
 
-For more examples, see ``example/test.py``.
+For more examples, see ``example/test.py`` in source.
 
 
 .. _`Vingd`: http://www.vingd.com/
