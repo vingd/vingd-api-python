@@ -32,6 +32,8 @@ class Vingd:
         # `key`, `secret` are forward compatible arguments (we'll switch to oauth soon)
         self.api_key = key or username
         self.api_secret = secret or hash(password)
+        if not self.api_key or not self.api_secret:
+            raise Exception("API key/username and/or API secret/password undefined.")
         if endpoint: self.api_endpoint = endpoint
         if frontend: self.usr_frontend = frontend
     
