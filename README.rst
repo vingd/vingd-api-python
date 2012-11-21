@@ -19,8 +19,8 @@ Vingd API for Python
 
 Vingd API enables you to register Vingd objects you're selling, create Vingd
 purchase orders, verify and commit Vingd purchases. You can also reward users,
-either directly (in backend), or indirectly via Vingd vouchers. For detailed
-docs and demos, see `docs.vingd.com`_.
+either directly (in backend), or indirectly via Vingd vouchers. Detailed `docs`_
+and `demos`_ are available.
 
 
 Installation
@@ -56,5 +56,20 @@ Example Usage
 For more examples, see ``example/test.py`` in source.
 
 
+Documentation
+-------------
+
+Automatically generated documentation for latest stable version is available on:
+https://vingd-api-for-python.readthedocs.org/en/latest/.
+
+
+Copyright and License
+---------------------
+
+Vingd API is Copyright (c) 2012 Vingd, Inc and licensed under the MIT license.
+See the LICENSE file for full details.
+
+
 .. _`Vingd`: http://www.vingd.com/
-.. _`docs.vingd.com`: http://docs.vingd.com/
+.. _`docs`: https://vingd-api-for-python.readthedocs.org/en/latest/
+.. _`demos`: http://docs.vingd.com/
