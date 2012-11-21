@@ -23,6 +23,21 @@ either directly (in backend), or indirectly via Vingd vouchers. For detailed
 docs and demos, see `docs.vingd.com`_.
 
 
+Installation
+------------
+
+To install the last stable release of Vingd API: ::
+
+   $ pip install vingd
+
+Or, to install from GitHub source: ::
+
+   $ git clone https://github.com/vingd/vingd-api-python
+   $ cd vingd-api-python
+   $ make env && source env/bin/activate   (skip if already in virtualenv)
+   $ python setup.py install
+
+
 Mini Example
 ------------
 
@@ -38,7 +53,7 @@ Mini Example
    vouchers = v.get_vouchers()
    print "I have %d active vouchers." % len(vouchers)
 
-For more examples, see ``example/text.py``.
+For more examples, see ``example/test.py``.
 
 
 .. _`Vingd`: http://www.vingd.com/
