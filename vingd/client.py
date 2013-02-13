@@ -97,56 +97,23 @@ class Vingd:
         raise GeneralException(message, context, code)
     
     @staticmethod
-    def _extract_id_from_batch_response(r, name='ids'):
-        id = r[name][0]
-        if id:
-            return int(id)
-        raise GeneralException(r['errors'][0]['desc'])
-    
-    def create_objects(self, objects):
-        """
-        CREATES a collection of objects in Vingd Object registry.
-        
-        :type objects: ``dict/list``
-        :param objects:
-            A dictionary (or a list) structure describing one (or several)
-            object(s) (JSON-compatible). ``objects`` can be a dictionary, or a
-            list of dictionaries, each defining one object and each containing
-            exactly two keys: ``class`` and ``description``. ``description``
-            field is almost completely user-defined, but it MUST contain two
-            mandatory fields: object's ``name`` and resource/callback ``url``.
-            ``class`` is an integer that signifies the object class. Note that
-            object's owner is set according to the authenticated user. ::
-            
-                objects = [ {
-                    'class': <class_id>,
-                    'description': <json_description>,
-                }, {
-                    // object 2
-                }, ...]
-              
-                <json_description> = {
-                    'name': "",
-                    'url': ""
-                }
-            
-        :rtype: `ComplexData`
-        :returns:
-            A batch query response
-            ``{'oids': <object_id_list>, 'errors': <errors_list>}``.
-        :raises GeneralException:
-        
-        :note: Included for completeness; the use of `create_object` is
-            recommended instead.
-        
-        :resource: ``registry/objects/``
-        :access: authorized users
-        """
-        return self.request('post', 'registry/objects/', json.dumps(objects))
+    def _extract_id_from_batch_response(r, name='id'):
+        """ Unholy, forward-compatible, mess for extraction of id/oid from a
+        soon-to-be (deprecated) batch response. """
+        names = name + 's'
+        if names in r:
+            # soon-to-be deprecated batch reponse
+            if 'errors' in r and r['errors']:
+                raise GeneralException(r['errors'][0]['desc'])
+            id = r[names][0]
+        else:
+            # new-style simplified api response
+            id = r[name]
+        return int(id)
     
     def create_object(self, name, url):
         """
-        CREATES a single object.
+        CREATES a single object in Vingd Object registry.
         
         :type name: ``string``
         :param name:
@@ -157,19 +124,18 @@ class Vingd:
         
         :rtype: `bigint`
         :returns: Object ID for the newly created object.
-        :raises GeneralException:
+        :raises GeneralException:s
         
-        :see: `create_objects`
+        :resource: ``registry/objects/``
         :access: authorized users
         """
-        r = self.create_objects({
-            'class': 0,
+        r = self.request('post', 'registry/objects/', json.dumps({
             'description': {
                 'name': name,
                 'url': url
             }
-        })
-        return self._extract_id_from_batch_response(r, 'oids')
+        }))
+        return self._extract_id_from_batch_response(r, 'oid')
     
     def purchase_verify(self, oid, tid):
         """
@@ -179,30 +145,28 @@ class Vingd:
         
         :type oid: ``bigint``
         :param oid:
-            Object ID
+            Object ID.
         :type tid: ``alphanumeric(40)``
         :param tid:
-            Token ID
+            Token ID.
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             A single token data dictionary::
             
                 token = {
                     "object": <object_name>,
                     "huid": <hashed_user_id_bound_to_seller> / None,
-                    "reclaimed": <boolean>,
-                    "regenerated": <boolean>
                     ...
                 }
             
-            with meanings of individual fields as it follows:
+            where:
             
-                * ``object`` -- Object's name, as stored in object's
+                * ``object`` is object's name, as stored in object's
                   ``description['name']`` Registry entry, at the time of token
                   creation/purchase (i.e. if object changes its name in the
                   meantime, ``object`` field will hold the old/obsolete name).
-                * ``huid`` -- Hashed User ID - The unique ID for a user, bound
+                * ``huid`` is Hashed User ID - The unique ID for a user, bound
                   to the object owner/seller. Each user/buyer of the ``oid``
                   gets an arbitrary (random) identification alphanumeric handle
                   associated with her, such that ``huid`` is unique in the set
@@ -213,15 +177,6 @@ class Vingd:
                   and user's privacy is guaranteed. Also, note that the value of
                   ``huid`` **will be** ``null`` iff buyer chose anonymous
                   purchase.
-                * ``reclaimed`` -- A boolean signifying that object purchase was
-                  attempted (prior to token creation), but the user already was
-                  entitled to that object and no costs to user were incurred.
-                * ``regenerated`` -- Another, less interesting, boolean flag
-                  which is **independent** of user's entitlement to ``oid`` --
-                  it merely signifies that at the time of token creation a
-                  **valid** (non-expired) token already existed (this however
-                  doesn't mean the user was still entitled to that object *[the
-                  case of counted entitlements]*!).
         
         :raises GeneralException:
         :raises Forbidden:
@@ -239,8 +194,8 @@ class Vingd:
         referenced by ``transferid``) as finished, with user being granted the
         access to the service or goods.
         
-        If seller does not do proper commit, the user shall be refunded full
-        amount paid (reserved) for the uncommitted purchase.
+        If seller fails to commit the purchase, the user (buyer) shall be
+        refunded full amount paid (reserved).
         
         :type purchaseid: ``bigint``
         :param purchaseid:
@@ -251,7 +206,7 @@ class Vingd:
             Transfer ID, as returned in purchase description, upon
             token/purchase verification.
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             ``{'ok': <boolean>}``.
         :raises InvalidData: invalid format of input parameters
@@ -269,49 +224,14 @@ class Vingd:
             json.dumps({'transferid': transferid})
         )
     
-    def create_orders(self, oid, orders):
-        """
-        CREATES one or more unrelated orders for object ``oid``.
-        
-        :type oid: ``bigint``
-        :param oid:
-            Object ID
-        :type orders: ``list/dict``
-        :param orders:
-            A list of object orders description dictionaries,
-            *or* a single dictionary::
-            
-                orders = [ {
-                    "price": <int_price_in_cents>,
-                    "order_expires": <iso8601_timestamp_absolute>
-                    ...
-                }, {
-                    // order 2
-                }, ... ]
-        
-        :rtype: `ComplexData`
-        :returns:
-            A batch query response
-            ``{'ids': <token_id_list>, 'errors': <errors_list>}``.
-        :raises GeneralException:
-        
-        :note: Included for completeness; the use of `create_order` is
-            recommended instead.
-        
-        :resource: ``objects/<oid>/orders/``
-        :access: authorized users (the user MUST own the object he's trying to
-            sell)
-        """
-        return self.request('post', 'objects/%d/orders/' % int(oid), json.dumps(orders))
-    
     def create_order(self, oid, price, expires):
         """
-        CREATES a single order for object ``oid``, with price set to ``amount``
+        CREATES a single order for object ``oid``, with price set to ``price``
         and validity until ``expires``.
         
         :type oid: ``bigint``
         :param oid:
-            Object ID
+            Object ID.
         :type price: ``bigint``
         :param price:
             Vingd amount (in cents) the user/buyer shall be charged upon
@@ -322,7 +242,7 @@ class Vingd:
         
         :rtype: ``dict``
         :returns:
-            Order parameters dictionary::
+            Order dictionary::
             
                 order = {
                     'id': <order_id>,
@@ -336,10 +256,14 @@ class Vingd:
                         'popup': <url_for_popup_purchase_mode>
                     }
                 }
-            
+        
         :raises GeneralException:
+        :resource: ``objects/<oid>/orders/``
+        :access: authorized users
         """
-        orders = self.create_orders(oid, {'price': price, 'order_expires': expires.isoformat()})
+        orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
+            'price': price, 'order_expires': expires.isoformat()
+        }))
         orderid = self._extract_id_from_batch_response(orders)
         return {
             'id': orderid,
@@ -370,11 +294,8 @@ class Vingd:
             `NotFound` exception raised. Otherwise, a LIST of orders is
             returned.
         
-        :rtype: `SimpleData` (``list``/``dict``)
-        :returns:
-            (A list of) order(s) data dictionary(ies). ``entitlement_expires``
-            is either ISO 8601 absolute timestamp, or a relative
-            period/duration.
+        :rtype: ``list``/``dict``
+        :returns: (A list of) order(s) description dictionary(ies).
         :raises GeneralException:
         
         :resource: ``[objects/<oid>/]orders/[<all>/]<orderid>``
@@ -399,7 +320,7 @@ class Vingd:
         :param orderid:
             Order ID
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             The order description dictionary.
         :raises GeneralException:
@@ -411,82 +332,37 @@ class Vingd:
         """
         return self.get_orders(orderid=orderid)
     
-    def update_objects(self, objects):
-        """
-        UPDATES a collection of objects in registry.
-        
-        :type objects: ``dict/list``
-        :param objects:
-            A dictionary (or a list) structure re-describing one (or several)
-            object(s) (JSON-compatible). ``objects`` MUST be a list of
-            dictionaries, each redefining (updating) one object (see
-            `create_objects`). Each dictionary with object definition, however,
-            MUST be complemented with ``oid`` for object being updated. As a
-            result, each dictionary MUST contain at least three keys: ``oid``,
-            ``class`` and ``description``. For ``class`` and ``description``
-            details, see `create_objects` function. ::
-            
-                objects = [ {
-                    'class': <class_id>,
-                    'description': <json_description>,
-                    'oid': <object_id>,
-                }, {
-                    // object 2
-                }, ...]
-                
-                <json_description> = {
-                    'name': "",
-                    'url': ""
-                }
-        
-        :rtype: `ComplexData`
-        :returns:
-            A batch query response
-            ``{'oids': <object_id_list>, 'errors': <errors_list>}``.
-        :raises GeneralException:
-        
-        :note: Included for completeness; the use of `update_object` is
-            recommended instead.
-        
-        :see: `create_objects`
-        :resource: ``registry/objects/``
-        :access: authorized user MUST be the object owner
-        """
-        return self.request('put', 'registry/objects/', json.dumps(objects))
-    
     def update_object(self, oid, name, url):
         """
-        UPDATES a single object in registry.
+        UPDATES a single object in Vingd Object registry.
         
         :type oid: ``bigint``
         :param oid:
-            Object ID of the object undergoing the update to the new definition.
+            Object ID of the object being updated.
         :type name: ``string``
         :param name:
-            Object's name.
+            New object's name.
         :type url: ``string``
         :param url:
-            Callback URL (object's resource location).
+            New callback URL (object's resource location).
         
         :rtype: `bigint`
         :returns: Object ID of the updated object.
         :raises GeneralException:
         
-        :see: `update_objects`
         :resource: ``registry/objects/<oid>/``
         :access: authorized user MUST be the object owner
         """
         r = self.request(
             'put', 'registry/objects/%d/' % oid,
             json.dumps({
-                'class': 0,
                 'description': {
                     'name': name,
                     'url': url
                 }
             })
         )
-        return self._extract_id_from_batch_response(r, 'oids')
+        return self._extract_id_from_batch_response(r, 'oid')
     
     def get_objects(self, oid=None,
                     since=None, until=None, last=None, first=None):
@@ -514,7 +390,7 @@ class Vingd:
             The number of oldest objects (that satisfy all other criteria) to
             return.
         
-        :rtype: `SimpleData` (``list``/``dict``)
+        :rtype: ``list``/``dict``
         :returns:
             A list of object description dictionaries. If ``oid`` is specified,
             a single dictionary is returned instead of a list.
@@ -542,7 +418,7 @@ class Vingd:
         :param oid:
             Object ID
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             The object description dictionary.
         :raises GeneralException:
@@ -562,7 +438,7 @@ class Vingd:
         """
         FETCHES profile dictionary of the authenticated user.
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             A single user description dictionary.
         :raises GeneralException:
@@ -604,7 +480,7 @@ class Vingd:
             Transaction description (optional).
         
         :rtype: ``dict``
-        :returns:
+        :returns: ``{'transfer_id': <transfer_id>}``
             Fort Transfer ID packed inside a dict.
         :raises Forbidden: consumer has to have ``transfer.outbound`` ACL flag
             set.
@@ -638,7 +514,7 @@ class Vingd:
         :param gid:
             Voucher group id. An user can redeem only one voucher per group.
         
-        :rtype: `SimpleData` (``dict``)
+        :rtype: ``dict``
         :returns:
             Created voucher description::
                 
@@ -719,7 +595,7 @@ class Vingd:
             If `first` or `last` are used, the vouchers list is sorted by time
             created, otherwise it is sorted alphabetically by `vid_encoded`.
         
-        :rtype: `SimpleData` (``list``/``dict``)
+        :rtype: ``list``/``dict``
         :returns:
             A list of voucher description dictionaries. If `vid_encoded` is
             specified, a single dictionary is returned instead of a list.
@@ -795,7 +671,7 @@ class Vingd:
             If `first` or `last` are used, the vouchers list is sorted by time
             created, otherwise it is sorted alphabetically by `id`.
         
-        :rtype: `SimpleData` (``list``/``dict``)
+        :rtype: ``list``/``dict``
         :returns:
             A list of voucher log description dictionaries.
         :raises GeneralException:
@@ -865,7 +741,7 @@ class Vingd:
             `revoke_vouchers()` call shall revoke **all** un-used vouchers (both
             valid and expired)!
         
-        :rtype: `ComplexData` (``dict``)
+        :rtype: ``dict``
         :returns:
             A dictionary of successfully revoked vouchers, i.e. a map
             ``vid_encoded``: ``refund_transfer_id`` for all successfully revoked

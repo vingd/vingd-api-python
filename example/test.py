@@ -59,7 +59,7 @@ print 'I have %d active objects.' % len(objects)
 order = v.create_order(oid, 200, datetime.now()+timedelta(days=1))
 print "I've also created an order (id=%d) for the object (oid=%d): %s" % (order['id'], order['object']['id'], order['urls']['redirect'])
 
-tid = raw_input("After you buy it, enter the Token ID here: ")
+tid = raw_input("After you buy it, enter the Token ID here ('tid' param on callback url): ")
 purchase = v.purchase_verify(oid, tid)
 huid_buyer = purchase['huid']
 print "Purchase verified (buyer's HUID = %s)." % huid_buyer
