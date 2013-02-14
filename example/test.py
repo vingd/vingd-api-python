@@ -51,7 +51,7 @@ oid2 = v.update_object(oid, "New object name", "http://localhost:777/")
 print "Object updated."
 
 object = v.get_object(oid)
-print "Object last modified at %s, new url is %s" % (object['timestamp_created'], object['description']['url'])
+print "Object last modified at %s, new url is %s" % (object['timestamp_modified'], object['description']['url'])
 
 objects = v.get_objects()
 print 'I have %d active objects.' % len(objects)
