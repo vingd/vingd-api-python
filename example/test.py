@@ -9,7 +9,7 @@ from vingd import Vingd
 from datetime import datetime, timedelta
 
 # sandbox backend:
-v = Vingd(username="test@knopso.com", password="123", endpoint=Vingd.URL_ENDPOINT_SANDBOX, frontend=Vingd.URL_FRONTEND_SANDBOX)
+v = Vingd(username="test@vingd.com", password="123", endpoint=Vingd.URL_ENDPOINT_SANDBOX, frontend=Vingd.URL_FRONTEND_SANDBOX)
 
 # in production use:
 #v = Vingd(username="<vingd-login-username>", password="<vingd-login-password>")

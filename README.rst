@@ -47,7 +47,7 @@ Client initialization and account balance fetching:
 
     from vingd import Vingd
     
-    VINGD_USERNAME = 'test@knopso.com'
+    VINGD_USERNAME = 'test@vingd.com'
     VINGD_PASSWORD = '123'
     VINGD_FRONTEND = 'http://www.sandbox.vingd.com/'
     VINGD_ENDPOINT = 'https://api.vingd.com/sandbox/broker/v1/'
