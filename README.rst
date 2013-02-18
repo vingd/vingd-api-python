@@ -53,12 +53,7 @@ Client initialization and account balance fetching:
     VINGD_ENDPOINT = 'https://api.vingd.com/sandbox/broker/v1/'
     
     # Initialize vingd client.
-    v = Vingd(
-        username = VINGD_USERNAME,
-        password = VINGD_PASSWORD,
-        frontend = VINGD_FRONTEND,
-        endpoint = VINGD_ENDPOINT,
-    )
+    v = Vingd(username=VINGD_USERNAME, password=VINGD_PASSWORD, frontend=VINGD_FRONTEND, endpoint=VINGD_ENDPOINT)
     
     # Fetch user balance.
     balance = v.get_user_balance()
