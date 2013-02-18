@@ -110,7 +110,7 @@ Reward user with vingd:
     # Reward user.
     reward = v.reward_user(REWARD_HUID, REWARD_AMOUNT, REWARD_DESCRIPTION)
     
-For more examples, see ``example/test.py`` in source.
+For more examples, see `example/test.py`_ in source.
 
 
 Documentation
@@ -130,3 +130,4 @@ See the LICENSE file for full details.
 .. _`Vingd`: http://www.vingd.com/
 .. _`docs`: https://vingd-api-for-python.readthedocs.org/en/latest/
 .. _`demos`: http://docs.vingd.com/
+.. _`example/test.py`: https://github.com/vingd/vingd-api-python/blob/master/example/test.py
