@@ -50,13 +50,9 @@ Client initialization and account balance fetching:
     VINGD_USERNAME = 'test@vingd.com'
     VINGD_PASSWORD = '123'
     
-    # Initialize vingd client.
-    v = Vingd(
-        username = VINGD_USERNAME,
-        password = VINGD_PASSWORD,
-        endpoint = Vingd.URL_ENDPOINT_SANDBOX,
-        frontend = Vingd.URL_FRONTEND_SANDBOX
-    )
+    # Initialize Vingd client.
+    v = Vingd(username = VINGD_USERNAME, password = VINGD_PASSWORD,
+              endpoint = Vingd.URL_ENDPOINT_SANDBOX, frontend = Vingd.URL_FRONTEND_SANDBOX)
     
     # Fetch user balance.
     balance = v.get_user_balance()
@@ -64,31 +60,31 @@ Client initialization and account balance fetching:
 Sell content
 ------------
 
-Wrap up vingd order and redirect user to confirm his purchase at vingd frontend:
+Wrap up Vingd order and redirect user to confirm his purchase at Vingd frontend:
 
 .. code-block:: python
 
     # Selling details.
     OBJECT_NAME = "My test object"
     OBJECT_URL = "http://localhost:666/"
-    ORDER_PRICE = 200 # vingd 2.00
+    ORDER_PRICE = 200 # VINGD 2.00
     ORDER_EXPIRES = datetime.now() + timedelta(days=1)
     
-    # Register vingd object (once per selling item).
+    # Register Vingd object (once per selling item).
     oid = v.create_object(OBJECT_NAME, OBJECT_URL)
     
-    # Prepare vingd order.
+    # Prepare Vingd order.
     order = v.create_order(oid, ORDER_PRICE, ORDER_EXPIRES)
     
-    # Order ready, redirect user to confirm his purchase at vingd frontend.
+    # Order ready, redirect user to confirm his purchase at Vingd frontend.
     redirect_url = order['urls']['redirect']
 
-As user confirms his purchase on vingd fronted he is redirected back to object URL
+As user confirms his purchase on Vingd frontend he is redirected back to object URL
 expanded with purchase verification parameters.
     
 .. code-block:: python
 
-    # User confirmed purchase on vingd frontend and came back to http://localhost:666/?oid=<oid>&tid=<tid>
+    # User confirmed purchase on Vingd frontend and came back to http://localhost:666/?oid=<oid>&tid=<tid>
 
     # Verify purchase with received parameters.
     purchase = v.verify_purchase(oid, tid)
@@ -96,7 +92,7 @@ expanded with purchase verification parameters.
     # Purchase successfully verified, serve purchased content to user.
     # ... content serving ...
     
-    # Content is successfully served, commit vingd transaction.
+    # Content is successfully served, commit Vingd transaction.
     commit = v.commit_purchase(purchase['purchaseid'], purchase['transferid'])
 
 Reward user
@@ -108,7 +104,7 @@ Reward user with vingd:
 
     # Vingd hashed user id, as obtained in purchase procedure (previous example).
     REWARD_HUID = purchase['huid']
-    REWARD_AMOUNT = 75 # vingd 0.75
+    REWARD_AMOUNT = 75 # VINGD 0.75
     REWARD_DESCRIPTION = "Testing direct rewarding"
     
     # Reward user.
