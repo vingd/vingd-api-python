@@ -15,7 +15,7 @@ them access to digital goods.
 
 
 Vingd API for Python
-====================
+--------------------
 
 Vingd API enables you to register Vingd objects you're selling, create Vingd
 purchase orders, verify and commit Vingd purchases. You can also reward users,
@@ -24,7 +24,7 @@ and `demos`_ are available.
 
 
 Installation
-============
+------------
 
 To install the last stable release of Vingd API: ::
 
@@ -39,7 +39,7 @@ Or, to install from GitHub source: ::
 
 
 Examples
-========
+--------
 
 Client initialization and account balance fetching:
 
@@ -58,7 +58,7 @@ Client initialization and account balance fetching:
     balance = v.get_user_balance()
 
 Sell content
-------------
+~~~~~~~~~~~~
 
 Wrap up Vingd order and redirect user to confirm his purchase at Vingd frontend:
 
@@ -96,7 +96,7 @@ expanded with purchase verification parameters.
     commit = v.commit_purchase(purchase['purchaseid'], purchase['transferid'])
 
 Reward user
------------
+~~~~~~~~~~~
 
 Reward user with vingd:
 
@@ -114,14 +114,14 @@ For more examples, see `example/test.py`_ in source.
 
 
 Documentation
-=============
+-------------
 
 Automatically generated documentation for latest stable version is available on:
 https://vingd-api-for-python.readthedocs.org/en/latest/.
 
 
 Copyright and License
-=====================
+---------------------
 
 Vingd API is Copyright (c) 2012 Vingd, Inc and licensed under the MIT license.
 See the LICENSE file for full details.
