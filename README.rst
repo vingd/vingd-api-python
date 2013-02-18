@@ -47,10 +47,17 @@ Client initialization and account balance fetching:
 
     from vingd import Vingd
     
+    VINGD_USERNAME = 'test@knopso.com'
+    VINGD_PASSWORD = '123'
+    VINGD_FRONTEND = 'http://www.sandbox.vingd.com/'
+    VINGD_ENDPOINT = 'https://api.vingd.com/sandbox/broker/v1/'
+    
     # Initialize vingd client.
     v = Vingd(
-        username = 'test@vingd.com',
-        password = 'test123',
+        username = VINGD_USERNAME,
+        password = VINGD_PASSWORD,
+        frontend = VINGD_FRONTEND,
+        endpoint = VINGD_ENDPOINT,
     )
     
     # Fetch user balance.
@@ -103,15 +110,11 @@ Reward user with vingd:
 
     # Vingd hashed user id, as obtained in purchase procedure (previous example).
     REWARD_HUID = purchase['huid']
-    REWARD_DESCRIPTION = "Testing direct rewarding"
     REWARD_AMOUNT = 75 # vingd 0.75
+    REWARD_DESCRIPTION = "Testing direct rewarding"
     
     # Reward user.
-    reward = v.reward_user(
-        huid_to = REWARD_HUID,
-        amount = REWARD_AMOUNT,
-        description = REWARD_DESCRIPTION,
-    )
+    reward = v.reward_user(REWARD_HUID, REWARD_AMOUNT, REWARD_DESCRIPTION)
     
 For more examples, see ``example/test.py`` in source.
 
