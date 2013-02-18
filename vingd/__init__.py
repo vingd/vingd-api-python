@@ -1,7 +1,7 @@
 """Vingd API interface client."""
 
 __title__ = 'vingd-api-python'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 __author__ = 'Radomir Stevanovic'
 __author_email__ = 'radomir@vingd.com'
 __copyright__ = 'Copyright 2012 Vingd, Inc.'
