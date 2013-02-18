@@ -22,10 +22,17 @@ from .util import quote, hash
 
 
 class Vingd:
+    # production urls
+    URL_ENDPOINT = "https://api.vingd.com/broker/v1"
+    URL_FRONTEND = "https://www.vingd.com"
+    # sandbox urls
+    URL_ENDPOINT_SANDBOX = "https://api.vingd.com/sandbox/broker/v1"
+    URL_FRONTEND_SANDBOX = "http://www.sandbox.vingd.com"
+    
     api_key = None
     api_secret = None
-    api_endpoint = "https://api.vingd.com/broker/v1/"
-    usr_frontend = "https://www.vingd.com/"
+    api_endpoint = URL_ENDPOINT
+    usr_frontend = URL_FRONTEND
     
     def __init__(self, key=None, secret=None, endpoint=None, frontend=None,
                  username=None, password=None):
@@ -53,7 +60,7 @@ class Vingd:
         
         host = endpoint.netloc.split(':')[0]
         port = 443
-        path = urljoin(endpoint.path, subpath)
+        path = urljoin(endpoint.path+'/', subpath)
         
         headers = {'Authorization': 'Basic ' + base64.b64encode("%s:%s" % (self.api_key, self.api_secret)) }
         try:
