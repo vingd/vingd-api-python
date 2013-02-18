@@ -15,7 +15,7 @@ setup(
     packages=[vingd.__name__],
     package_dir={vingd.__name__: vingd.__name__},
     license=vingd.__license__,
-    classifiers=(
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Programming Language :: Python',
@@ -23,6 +23,6 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Internet',
         'Topic :: Office/Business :: Financial',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    )
+        'Topic :: Software Development :: Libraries :: Python Modules'
+    ]
 )
