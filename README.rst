@@ -101,7 +101,7 @@ Reward user with vingd:
 
 .. code-block:: python
 
-    # Vingd user id, as obtained in purchase procedure (previous example).
+    # Vingd hashed user id, as obtained in purchase procedure (previous example).
     REWARD_HUID = purchase['huid']
     REWARD_DESCRIPTION = "Testing direct rewarding"
     REWARD_AMOUNT = 75 # vingd 0.75
