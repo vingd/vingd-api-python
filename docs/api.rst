@@ -27,8 +27,8 @@ Vingd authorization ("selling access")
 .. autosummary::
    create_object
    create_order
-   purchase_verify
-   purchase_commit
+   verify_purchase
+   commit_purchase
 
 Vingd rewarding
 ~~~~~~~~~~~~~~~
