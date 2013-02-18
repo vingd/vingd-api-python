@@ -137,7 +137,7 @@ class Vingd:
         }))
         return self._extract_id_from_batch_response(r, 'oid')
     
-    def purchase_verify(self, oid, tid):
+    def verify_purchase(self, oid, tid):
         """
         VERIFIES token ``tid`` and returns token data associated with ``tid``
         and bound to object ``oid``. At the same time decrements entitlement
@@ -182,13 +182,13 @@ class Vingd:
         :raises Forbidden:
             User no longer entitled to ``oid`` (count-wise).
         
-        :see: `purchase_commit`.
+        :see: `commit_purchase`.
         :resource: ``objects/<oid>/tokens/<tid>``
         :access: authenticated user MUST be the object's owner
         """
         return self.request('get', 'objects/%d/tokens/%s' % (oid, tid))
     
-    def purchase_commit(self, purchaseid, transferid):
+    def commit_purchase(self, purchaseid, transferid):
         """
         DECLARES a purchase defined with ``purchaseid`` (bound to vingd transfer
         referenced by ``transferid``) as finished, with user being granted the
@@ -214,7 +214,7 @@ class Vingd:
         :raises GeneralException: depends on details of error
         :raises InternalError: Vingd internal error (network, server, app)
         
-        :see: `purchase_verify`.
+        :see: `verify_purchase`.
         :resource: ``purchases/<purchaseid>``
         :access: authorized users (ACL flag: ``type.business``)
         """
