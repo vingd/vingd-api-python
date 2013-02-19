@@ -95,8 +95,8 @@ expanded with purchase verification parameters.
     # Content is successfully served, commit Vingd transaction.
     commit = v.commit_purchase(purchase['purchaseid'], purchase['transferid'])
 
-Reward user
-~~~~~~~~~~~
+Reward user with vingd
+~~~~~~~~~~~~~~~~~~~~~~
 
 Reward user with vingd:
 
@@ -109,6 +109,20 @@ Reward user with vingd:
     
     # Reward user.
     reward = v.reward_user(REWARD_HUID, REWARD_AMOUNT, REWARD_DESCRIPTION)
+
+Reward user with voucher
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    VOUCHER_AMOUNT = 100; # 1.00 vingd
+    VOUCHER_EXPIRES = datetime.now()+timedelta(days=7)
+
+    # Create vingd voucher.
+    voucher = v.create_voucher(amount=VOUCHER_AMOUNT, expires=VOUCHER_EXPIRES)
+    
+    # Redirect user to use voucher on vingd frontend:
+    redirect_url = voucher['urls']['redirect']
     
 For more examples, see `example/test.py`_ in source.
 
