@@ -85,8 +85,6 @@ expanded with purchase verification parameters.
 .. code-block:: python
 
     # User confirmed purchase on Vingd frontend and came back to http://localhost:666/?oid=<oid>&tid=<tid>
-
-    # Verify purchase with received parameters.
     purchase = v.verify_purchase(oid, tid)
 
     # Purchase successfully verified, serve purchased content to user.
