@@ -111,6 +111,8 @@ Reward user with vingd:
 Reward user with voucher
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
+Redirect user to redeem his reward on vingd frontend:
+
 .. code-block:: python
 
     VOUCHER_AMOUNT = 100; # 1.00 vingd
