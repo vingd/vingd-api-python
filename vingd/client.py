@@ -164,6 +164,7 @@ class Vingd:
                 token = {
                     "object": <object_name>,
                     "huid": <hashed_user_id_bound_to_seller> / None,
+                    "context": <order_context> / None,
                     ...
                 }
             
@@ -184,6 +185,8 @@ class Vingd:
                   and user's privacy is guaranteed. Also, note that the value of
                   ``huid`` **will be** ``null`` iff buyer chose anonymous
                   purchase.
+                * ``context`` is an arbitrary purchase context defined when
+                  creating order.
         
         :raises GeneralException:
         :raises Forbidden:
@@ -231,7 +234,7 @@ class Vingd:
             json.dumps({'transferid': transferid})
         )
     
-    def create_order(self, oid, price, expires):
+    def create_order(self, oid, price, expires, context=None):
         """
         CREATES a single order for object ``oid``, with price set to ``price``
         and validity until ``expires``.
@@ -254,6 +257,7 @@ class Vingd:
                 order = {
                     'id': <order_id>,
                     'expires': <order_expiry>,
+                    'context': <purchase_context>,
                     'object': {
                         'id': <oid>,
                         'price': <amount_in_cents>
@@ -269,12 +273,15 @@ class Vingd:
         :access: authorized users
         """
         orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
-            'price': price, 'order_expires': expires.isoformat()
+            'price': price,
+            'order_expires': expires.isoformat(),
+            'context': context
         }))
         orderid = self._extract_id_from_batch_response(orders)
         return {
             'id': orderid,
             'expires': expires.isoformat(),
+            'context': context,
             'object': {
                 'id': oid,
                 'price': price

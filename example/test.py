@@ -56,13 +56,14 @@ print "Object last modified at %s, new url is %s" % (object['timestamp_modified'
 objects = v.get_objects()
 print 'I have %d active objects.' % len(objects)
 
-order = v.create_order(oid, 200, datetime.now()+timedelta(days=1))
+order = v.create_order(oid, 200, datetime.now()+timedelta(days=1), context='optional purchase details')
 print "I've also created an order (id=%d) for the object (oid=%d): %s" % (order['id'], order['object']['id'], order['urls']['redirect'])
 
 tid = raw_input("After you buy it, enter the Token ID here ('tid' param on callback url): ")
 purchase = v.verify_purchase(oid, tid)
 huid_buyer = purchase['huid']
-print "Purchase verified (buyer's HUID = %s)." % huid_buyer
+context = purchase['context']
+print "Purchase verified (buyer's HUID = %s, context = '%s')." % (huid_buyer, context)
 
 commit = v.commit_purchase(purchase['purchaseid'], purchase['transferid'])
 print "Content served, and purchase committed."
