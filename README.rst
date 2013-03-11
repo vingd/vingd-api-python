@@ -115,7 +115,7 @@ Redirect user to redeem his reward on vingd frontend:
 .. code-block:: python
 
     VOUCHER_AMOUNT = 100; # 1.00 vingd
-    VOUCHER_EXPIRES = datetime.now() + timedelta(days=7)
+    VOUCHER_EXPIRES = {'days': 14}
 
     # Create vingd voucher.
     voucher = v.create_voucher(amount=VOUCHER_AMOUNT, expires=VOUCHER_EXPIRES)
