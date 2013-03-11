@@ -253,9 +253,13 @@ class Vingd:
         :param context:
             Purchase (order-related) context. Retrieved upon purchase
             verification.
-        :type expires: ``datetime``
+        :type expires: ``datetime``/``dict``
         :param expires:
-            Order expiry timestamp. Default: `Vingd.EXP_ORDER`.
+            Order expiry timestamp, absolute (``datetime``) or relative
+            (``dict``). Valid keys for relative expiry timestamp dictionary are
+            same as keyword arguments for `datetime.timedelta` (``days``,
+            ``seconds``, ``minutes``, ``hours``, ``weeks``). Default:
+            `Vingd.EXP_ORDER`.
         
         :rtype: ``dict``
         :returns:
@@ -280,13 +284,17 @@ class Vingd:
         :access: authorized users
         """
         if expires is None:
-            expires = datetime.now(tzutc())+timedelta(**self.EXP_ORDER)
+            expires = self.EXP_ORDER
+        if isinstance(expires, dict):
+            expires = datetime.now(tzutc())+timedelta(**expires)
+        
         orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
             'price': price,
             'order_expires': expires.isoformat(),
             'context': context
         }))
         orderid = self._extract_id_from_batch_response(orders)
+        
         return {
             'id': orderid,
             'expires': expires.isoformat(),
