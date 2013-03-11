@@ -249,6 +249,10 @@ class Vingd:
         :type expires: ``datetime``
         :param expires:
             Order expiry timestamp.
+        :type context: ``string``
+        :param context:
+            Purchase (order-related) context. Retrieved upon purchase
+            verification.
         
         :rtype: ``dict``
         :returns:
