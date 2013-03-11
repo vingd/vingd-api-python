@@ -15,10 +15,11 @@ except ImportError:
 
 import base64
 from urlparse import urljoin, urlparse
+from datetime import datetime, timedelta
 
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
 from .response import Codes
-from .util import quote, hash
+from .util import quote, hash, tzutc
 
 
 class Vingd:
@@ -28,6 +29,8 @@ class Vingd:
     # sandbox urls
     URL_ENDPOINT_SANDBOX = "https://api.vingd.com/sandbox/broker/v1"
     URL_FRONTEND_SANDBOX = "http://www.sandbox.vingd.com"
+    
+    EXP_ORDER = {'minutes': 15}
     
     api_key = None
     api_secret = None
@@ -234,7 +237,7 @@ class Vingd:
             json.dumps({'transferid': transferid})
         )
     
-    def create_order(self, oid, price, expires, context=None):
+    def create_order(self, oid, price, context=None, expires=None):
         """
         CREATES a single order for object ``oid``, with price set to ``price``
         and validity until ``expires``.
@@ -246,13 +249,13 @@ class Vingd:
         :param price:
             Vingd amount (in cents) the user/buyer shall be charged upon
             successful purchase.
-        :type expires: ``datetime``
-        :param expires:
-            Order expiry timestamp.
         :type context: ``string``
         :param context:
             Purchase (order-related) context. Retrieved upon purchase
             verification.
+        :type expires: ``datetime``
+        :param expires:
+            Order expiry timestamp. Default: `Vingd.EXP_ORDER`.
         
         :rtype: ``dict``
         :returns:
@@ -276,6 +279,8 @@ class Vingd:
         :resource: ``objects/<oid>/orders/``
         :access: authorized users
         """
+        if expires is None:
+            expires = datetime.now(tzutc())+timedelta(**self.EXP_ORDER)
         orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
             'price': price,
             'order_expires': expires.isoformat(),

@@ -68,13 +68,12 @@ Wrap up Vingd order and redirect user to confirm his purchase at Vingd frontend:
     OBJECT_NAME = "My test object"
     OBJECT_URL = "http://localhost:666/"
     ORDER_PRICE = 200 # VINGD 2.00
-    ORDER_EXPIRES = datetime.now() + timedelta(days=1)
     
     # Register Vingd object (once per selling item).
     oid = v.create_object(OBJECT_NAME, OBJECT_URL)
     
     # Prepare Vingd order.
-    order = v.create_order(oid, ORDER_PRICE, ORDER_EXPIRES)
+    order = v.create_order(oid, ORDER_PRICE)
     
     # Order ready, redirect user to confirm his purchase at Vingd frontend.
     redirect_url = order['urls']['redirect']

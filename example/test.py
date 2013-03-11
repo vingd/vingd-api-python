@@ -56,7 +56,7 @@ print "Object last modified at %s, new url is %s" % (object['timestamp_modified'
 objects = v.get_objects()
 print 'I have %d active objects.' % len(objects)
 
-order = v.create_order(oid, 200, datetime.now()+timedelta(days=1), context='optional purchase details')
+order = v.create_order(oid, 200, context='optional purchase details')
 print "I've also created an order (id=%d) for the object (oid=%d): %s" % (order['id'], order['object']['id'], order['urls']['redirect'])
 
 tid = raw_input("After you buy it, enter the Token ID here ('tid' param on callback url): ")

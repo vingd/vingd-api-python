@@ -1,4 +1,5 @@
 import hashlib
+import datetime
 
 try:
     from urllib.parse import quote
@@ -14,6 +15,19 @@ except ImportError:
 
 def hash(msg):
     return hashlib.sha1(msg.encode('utf-8')).hexdigest() if msg else None
+
+
+class tzutc(datetime.tzinfo):
+    '''UTC time zone info.'''
+    
+    def utcoffset(self, dt):
+        return datetime.timedelta(0)
+    
+    def dst(self, dt):
+        return datetime.timedelta(0)
+    
+    def tzname(self, dt):
+        return "UTC"
 
 
 def parseDuration(string):
