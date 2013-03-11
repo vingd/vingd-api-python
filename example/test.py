@@ -6,7 +6,6 @@ import os
 sys.path.insert(0, os.path.abspath('..'))
 
 from vingd import Vingd
-from datetime import datetime, timedelta
 
 # sandbox backend:
 v = Vingd(username="test@vingd.com", password="123", endpoint=Vingd.URL_ENDPOINT_SANDBOX, frontend=Vingd.URL_FRONTEND_SANDBOX)
@@ -28,7 +27,7 @@ print 'My balance is VINGD %.2f.' % (balance/100.0)
 # voucher rewarding
 #
 
-voucher = v.create_voucher(amount=100, expires=datetime.now()+timedelta(days=7))
+voucher = v.create_voucher(amount=100, expires={'days':14})
 print "I'm rewarding you with this 1 vingd voucher (%s): %s." % (voucher['raw']['vid_encoded'], voucher['urls']['redirect'])
 
 vouchers = v.get_vouchers()

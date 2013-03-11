@@ -31,6 +31,7 @@ class Vingd:
     URL_FRONTEND_SANDBOX = "http://www.sandbox.vingd.com"
     
     EXP_ORDER = {'minutes': 15}
+    EXP_VOUCHER = {'days': 7}
     
     api_key = None
     api_secret = None
@@ -287,14 +288,12 @@ class Vingd:
             expires = self.EXP_ORDER
         if isinstance(expires, dict):
             expires = datetime.now(tzutc())+timedelta(**expires)
-        
         orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
             'price': price,
             'order_expires': expires.isoformat(),
             'context': context
         }))
         orderid = self._extract_id_from_batch_response(orders)
-        
         return {
             'id': orderid,
             'expires': expires.isoformat(),
@@ -526,7 +525,7 @@ class Vingd:
             'description': description
         }))
     
-    def create_voucher(self, amount, expires, message='', gid=None):
+    def create_voucher(self, amount, expires=None, message='', gid=None):
         """
         CREATES a new preallocated voucher with ``amount`` vingd cents reserved
         until ``expires``.
@@ -534,9 +533,13 @@ class Vingd:
         :type amount: ``bigint``
         :param amount:
             Voucher amount in vingd cents.
-        :type expires: ``datetime``
+        :type expires: ``datetime``/``dict``
         :param expires:
-            Voucher expiry timestamp.
+            Voucher expiry timestamp, absolute (``datetime``) or relative
+            (``dict``). Valid keys for relative expiry timestamp dictionary are
+            same as keyword arguments for `datetime.timedelta` (``days``,
+            ``seconds``, ``minutes``, ``hours``, ``weeks``). Default:
+            `Vingd.EXP_VOUCHER`.
         :type message: ``string``
         :param message:
             Short message displayed to user when she redeems the voucher on
@@ -573,6 +576,10 @@ class Vingd:
         :resource: ``vouchers/``
         :access: authorized users (ACL flag: ``voucher.add``)
         """
+        if expires is None:
+            expires = self.EXP_VOUCHER
+        if isinstance(expires, dict):
+            expires = datetime.now(tzutc())+timedelta(**expires)
         voucher = self.request('post', 'vouchers/', json.dumps({
             'amount': amount,
             'until': expires.isoformat(),
