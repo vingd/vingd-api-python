@@ -525,6 +525,33 @@ class Vingd:
             'autocommit': True
         }))
     
+    def authorized_create_user(identities, primary, delegate_permissions=None):
+        """Creates Vingd user (profile & account), links it with the provided
+        identities (to be verified later), and sets the delegate-user
+        permissions (creator being the delegate). Returns Vingd user's `huid`
+        (hashed user id).
+        
+        Example::
+        
+            vingd.authorized_create_user(
+                identities={"facebook": "12312312", "mail": "user@example.com"},
+                primary="facebook",
+                delegate_permissions=["get.account.balance", "purchase.object"]
+            )
+        
+        :rtype: ``string``
+        :returns: ``<huid>``
+        :raises GeneralException:
+        :resource: ``id/objects/<oid>/purchases``
+        
+        :access: authorized users with ACL flag ``user.create``
+        """
+        return self.request('post', '/id/users/', json.dumps({
+            'identities': identities,
+            'primary_identity': primary_identity,
+            'delegate_permissions': delegate_permissions
+        }))
+    
     def reward_user(self, huid_to, amount, description=None):
         """
         PERFORMS a single reward. User defined with `huid_to` is rewarded with
