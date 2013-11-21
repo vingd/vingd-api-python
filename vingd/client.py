@@ -488,10 +488,24 @@ class Vingd:
         :raises GeneralException:
         :resource: ``fort/accounts/``
         
-        :access: authorized users; only authenticated user's account data can be
+        :access: authorized users; authenticated user's account data will be
             fetched
         """
         return int(self.request('get', 'fort/accounts')['balance'])
+    
+    def authorized_get_account_balance(self, huid):
+        """
+        FETCHES the account balance for the user defined with `huid`.
+        
+        :rtype: ``bigint``
+        :returns: ``<amount_in_cents>``
+        :raises GeneralException:
+        :resource: ``fort/accounts/``
+        
+        :access: authorized users; delegate permission required for the
+            requester to read user's balance: 'get.account.balance'
+        """
+        return int(self.request('get', 'fort/accounts/%s' % huid)['balance'])
     
     def authorized_purchase_object(self, oid, price, huid):
         """Does delegated (pre-authorized) purchase of `oid` in the name of
