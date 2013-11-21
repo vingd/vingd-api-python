@@ -493,6 +493,17 @@ class Vingd:
         """
         return int(self.request('get', 'fort/accounts')['balance'])
     
+    def authorized_purchase_object(self, oid, price, huid):
+        """Does delegated (pre-authorized) purchase of `oid` in the name of
+        `huid`, at price `price` (vingd transferred from `huid` to consumer's
+        acc). Throws exception on failure.
+        """
+        return self.request('post', 'objects/%d/purchases' % oid, json.dumps({
+            'price': price,
+            'huid': huid,
+            'autocommit': True
+        }))
+    
     def reward_user(self, huid_to, amount, description=None):
         """
         PERFORMS a single reward. User defined with `huid_to` is rewarded with
