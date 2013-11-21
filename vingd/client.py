@@ -500,17 +500,24 @@ class Vingd:
         :rtype: ``bigint``
         :returns: ``<amount_in_cents>``
         :raises GeneralException:
-        :resource: ``fort/accounts/``
+        :resource: ``fort/accounts/<huid>``
         
         :access: authorized users; delegate permission required for the
-            requester to read user's balance: 'get.account.balance'
+            requester to read user's balance: ``get.account.balance``
         """
         return int(self.request('get', 'fort/accounts/%s' % huid)['balance'])
     
     def authorized_purchase_object(self, oid, price, huid):
         """Does delegated (pre-authorized) purchase of `oid` in the name of
         `huid`, at price `price` (vingd transferred from `huid` to consumer's
-        acc). Throws exception on failure.
+        acc).
+        
+        :raises GeneralException:
+        :resource: ``objects/<oid>/purchases``
+        
+        :access: authorized users with ACL flag ``purchase.object.authorize`` +
+            delegate permission required for the requester to charge the
+            user: ``purchase.object``
         """
         return self.request('post', 'objects/%d/purchases' % oid, json.dumps({
             'price': price,
