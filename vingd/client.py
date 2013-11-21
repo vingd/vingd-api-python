@@ -479,7 +479,7 @@ class Vingd:
         """
         return self.request('get', 'id/users')
     
-    def get_user_balance(self):
+    def get_account_balance(self):
         """
         FETCHES the account balance for the authenticated user.
         
