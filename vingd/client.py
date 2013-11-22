@@ -525,7 +525,7 @@ class Vingd:
             'autocommit': True
         }))
     
-    def authorized_create_user(identities, primary, delegate_permissions=None):
+    def authorized_create_user(self, identities, primary, permissions=None):
         """Creates Vingd user (profile & account), links it with the provided
         identities (to be verified later), and sets the delegate-user
         permissions (creator being the delegate). Returns Vingd user's `huid`
@@ -546,10 +546,10 @@ class Vingd:
         
         :access: authorized users with ACL flag ``user.create``
         """
-        return self.request('post', '/id/users/', json.dumps({
+        return self.request('post', 'id/users/', json.dumps({
             'identities': identities,
-            'primary_identity': primary_identity,
-            'delegate_permissions': delegate_permissions
+            'primary_identity': primary,
+            'delegate_permissions': permissions
         }))
     
     def reward_user(self, huid_to, amount, description=None):
