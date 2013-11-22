@@ -28,7 +28,7 @@ class Vingd:
     URL_FRONTEND = "https://www.vingd.com"
     # sandbox urls
     URL_ENDPOINT_SANDBOX = "https://api.vingd.com/sandbox/broker/v1"
-    URL_FRONTEND_SANDBOX = "http://www.sandbox.vingd.com"
+    URL_FRONTEND_SANDBOX = "https://www.sandbox.vingd.com"
     
     EXP_ORDER = {'minutes': 15}
     EXP_VOUCHER = {'days': 7}
