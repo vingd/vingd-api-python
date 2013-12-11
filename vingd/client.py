@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
 from .response import Codes
 from .util import quote, hash, tzutc
+from . import __version__
 
 
 class Vingd:
@@ -32,6 +33,8 @@ class Vingd:
     
     EXP_ORDER = {'minutes': 15}
     EXP_VOUCHER = {'days': 7}
+    
+    USER_AGENT = 'vingd-api-python/'+__version__
     
     api_key = None
     api_secret = None
@@ -66,7 +69,10 @@ class Vingd:
         port = 443
         path = urljoin(endpoint.path+'/', subpath)
         
-        headers = {'Authorization': 'Basic ' + base64.b64encode("%s:%s" % (self.api_key, self.api_secret)) }
+        headers = {
+            'Authorization': 'Basic ' + base64.b64encode("%s:%s" % (self.api_key, self.api_secret)),
+            'User-Agent': self.USER_AGENT
+        }
         try:
             conn = httplib.HTTPSConnection(host, port)
             conn.request(verb.upper(), quote(path), data, headers)
