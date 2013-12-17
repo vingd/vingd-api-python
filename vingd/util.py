@@ -1,5 +1,7 @@
 import hashlib
 import datetime
+import re
+from itertools import count
 
 try:
     from urllib.parse import quote
@@ -108,3 +110,77 @@ def parseDuration(string):
         return dict(zip(d.keys(), map(int, d.values())))
     
     return {}
+
+
+class ConversionError(TypeError):
+    """Raised by `safeformat` when argument can't be cast to the type proscribed
+    with `format_string`."""
+
+
+def safeformat(format_string, *args):
+    """String formatter with type validation. Python `format`-alike.
+    
+    Examples::
+        
+        - implicit indexing:
+        
+            safeformat("Decimal {:int}, hexadecimal {1:hex}", 2, "abc")
+            --> "Decimal 2, hexadecimal abc"
+    
+        - reusable arguments:
+        
+            safeformat("{:hex}. item: {0:str}", 13)
+            --> "13. item: 13"
+        
+        - safe paths:
+        
+            safeformat("objects/{:int}/tokens/{:hex}", 123, "ab2e36d953e7b634")
+            --> "objects/123/tokens/ab2e36d953e7b634"
+    
+    Format pattern is `{[index]:type}`, where `index` is optional argument
+    index, and `type` is one of the predefined typenames (currently: `int`,
+    `hex`, `str`).
+    """
+    
+    def hex(x):
+        if re.match('^[a-fA-F\d]*$', str(x)):
+            return str(x)
+        raise ValueError("Non-hex digits in hex number.")
+    
+    converters = {
+        'int': int,
+        'hex': hex,
+        'str': str
+    }
+    
+    argidx = count(0)
+    
+    def replace(match):
+        idx, typ = match.group('idx', 'typ')
+        
+        if idx is None:
+            idx = next(argidx)
+        else:
+            try:
+                idx = int(idx)
+            except:
+                raise ConversionError("Non-integer index: '%s'." % idx)
+        
+        try:
+            arg = args[idx]
+        except:
+            raise ConversionError("Index out of bounds: %d." % idx)
+        
+        try:
+            conv = converters[typ]
+        except:
+            raise ConversionError("Invalid converter/type: '%s'." % typ)
+        
+        try:
+            val = conv(arg)
+        except:
+            raise ConversionError("Argument '%s' not of type '%s'." % (arg, typ))
+        
+        return str(val)
+    
+    return re.sub("{(?:(?P<idx>\d+))?:(?P<typ>\w+)}", replace, format_string)
