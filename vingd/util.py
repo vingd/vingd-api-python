@@ -32,7 +32,7 @@ class tzutc(datetime.tzinfo):
         return "UTC"
 
 
-def parseDuration(string):
+def parse_duration(string):
     '''
     Parses duration/period stamp expressed in a subset of ISO8601 duration
     specification formats and returns a dictionary of time components (as
@@ -66,11 +66,11 @@ def parseDuration(string):
         from datetime import datetime
         from dateutil.relativedelta import relativedelta
         
-        rel = parseDuration('P1m')     # +1 month
-        rel = parseDuration('P 1y 1m T 2m 1s')
-        rel = parseDuration('P12w')    # +12 weeks
-        rel = parseDuration('P 0001-02-03 T 03:02:01')
-        rel = parseDuration('P00010203T030201')
+        rel = parse_duration('P1m')     # +1 month
+        rel = parse_duration('P 1y 1m T 2m 1s')
+        rel = parse_duration('P12w')    # +12 weeks
+        rel = parse_duration('P 0001-02-03 T 03:02:01')
+        rel = parse_duration('P00010203T030201')
         
         future = datetime.now() + relativedelta(**rel)
     
