@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
 from .response import Codes
-from .util import quote, hash, tzutc
+from .util import quote, hash, safeformat
 from . import __version__
 
 
@@ -115,8 +115,8 @@ class Vingd:
     
     @staticmethod
     def _extract_id_from_batch_response(r, name='id'):
-        """ Unholy, forward-compatible, mess for extraction of id/oid from a
-        soon-to-be (deprecated) batch response. """
+        """Unholy, forward-compatible, mess for extraction of id/oid from a
+        soon-to-be (deprecated) batch response."""
         names = name + 's'
         if names in r:
             # soon-to-be deprecated batch reponse
@@ -127,6 +127,17 @@ class Vingd:
             # new-style simplified api response
             id = r[name]
         return int(id)
+    
+    @staticmethod
+    def expand_timestamp(ts, default=None):
+        """Expand relative timestamp (``dict`` with `timedelta`-supported keys)
+        to absolute with `default` failback. Ensure `datetime` is returned."""
+        if ts is None:
+            ts = default
+        if isinstance(ts, dict):
+            ts = now() + timedelta(**ts)
+        assert isinstance(ts, datetime)
+        return ts
     
     def create_object(self, name, url):
         """
@@ -206,7 +217,10 @@ class Vingd:
         :resource: ``objects/<oid>/tokens/<tid>``
         :access: authenticated user MUST be the object's owner
         """
-        return self.request('get', 'objects/%d/tokens/%s' % (oid, tid))
+        return self.request(
+            'get',
+            safeformat('objects/{:int}/tokens/{:hex}', oid, tid)
+        )
     
     def commit_purchase(self, purchaseid, transferid):
         """
@@ -240,7 +254,7 @@ class Vingd:
         """
         return self.request(
             'put',
-            'purchases/%d' % int(purchaseid),
+            safeformat('purchases/{:int}', purchaseid),
             json.dumps({'transferid': transferid})
         )
     
@@ -290,15 +304,15 @@ class Vingd:
         :resource: ``objects/<oid>/orders/``
         :access: authorized users
         """
-        if expires is None:
-            expires = self.EXP_ORDER
-        if isinstance(expires, dict):
-            expires = datetime.now(tzutc())+timedelta(**expires)
-        orders = self.request('post', 'objects/%d/orders/' % int(oid), json.dumps({
-            'price': price,
-            'order_expires': expires.isoformat(),
-            'context': context
-        }))
+        expires = self.expand_timestamp(expires, default=self.EXP_ORDER)
+        orders = self.request(
+            'post',
+            safeformat('objects/{:int}/orders/', oid),
+            json.dumps({
+                'price': price,
+                'order_expires': expires.isoformat(),
+                'context': context
+            }))
         orderid = self._extract_id_from_batch_response(orders)
         return {
             'id': orderid,
@@ -341,9 +355,9 @@ class Vingd:
         return self.request(
             'get',
             '%sorders/%s%s' % (
-                ('objects/%d/' % oid) if oid else "",
+                safeformat('objects/{:int}/', oid) if oid else "",
                 "all/" if include_expired else "",
-                orderid if orderid else ""
+                safeformat('{:int}', orderid) if orderid else ""
             )
         )
     
@@ -390,7 +404,8 @@ class Vingd:
         :access: authorized user MUST be the object owner
         """
         r = self.request(
-            'put', 'registry/objects/%d/' % oid,
+            'put',
+            safeformat('registry/objects/{:int}/', oid),
             json.dumps({
                 'description': {
                     'name': name,
@@ -409,14 +424,16 @@ class Vingd:
         :type oid: ``bigint``
         :param oid:
             Object ID
-        :type since: ``string``
+        :type since: ``datetime``/``dict``
         :param since:
-            Object has to be newer than this timestamp (in ISO 8601 basic
-            format).
-        :type until: ``string``
+            Object has to be newer than this timestamp (absolute ``datetime``,
+            or relative ``dict``). Valid keys for relative `since` timestamp
+            dictionary are same as keyword arguments for `datetime.timedelta`
+            (``days``, ``seconds``, ``minutes``, ``hours``, ``weeks``).
+        :type until: ``datetime``/``dict``
         :param until:
-            Object has to be older than this timestamp (in ISO 8601 basic
-            format).
+            Object has to be older than this timestamp (for format, see the
+            `since` parameter above).
         :type last: ``bigint``
         :param last:
             The number of newest objects (that satisfy all other criteria) to
@@ -440,8 +457,8 @@ class Vingd:
         """
         resource = 'registry/objects'
         if oid: resource += '/%d' % int(oid)
-        if since: resource += '/since=%s' % since
-        if until: resource += '/until=%s' % until
+        if since: resource += '/since=%s' % self.expand_timestamp(since).isoformat()
+        if until: resource += '/until=%s' % self.expand_timestamp(until).isoformat()
         if first: resource += '/first=%d' % int(first)
         if last: resource += '/last=%d' % int(last)
         return self.request('get', resource)
@@ -468,7 +485,7 @@ class Vingd:
         :access: authorized users (only objects owned by the authenticated user
             are returned)
         """
-        return self.request('get', 'registry/objects/%d' % oid)
+        return self.request('get', safeformat('registry/objects/{:int}', oid))
     
     def get_user_profile(self):
         """
@@ -511,7 +528,8 @@ class Vingd:
         :access: authorized users; delegate permission required for the
             requester to read user's balance: ``get.account.balance``
         """
-        return int(self.request('get', 'fort/accounts/%s' % huid)['balance'])
+        acc = self.request('get', safeformat('fort/accounts/{:hex}', huid))
+        return int(acc['balance'])
     
     def authorized_purchase_object(self, oid, price, huid):
         """Does delegated (pre-authorized) purchase of `oid` in the name of
@@ -525,11 +543,14 @@ class Vingd:
             delegate permission required for the requester to charge the
             user: ``purchase.object``
         """
-        return self.request('post', 'objects/%d/purchases' % oid, json.dumps({
-            'price': price,
-            'huid': huid,
-            'autocommit': True
-        }))
+        return self.request(
+            'post',
+            safeformat('objects/{:int}/purchases', oid),
+            json.dumps({
+                'price': price,
+                'huid': huid,
+                'autocommit': True
+            }))
     
     def authorized_create_user(self, identities, primary, permissions=None):
         """Creates Vingd user (profile & account), links it with the provided
@@ -641,10 +662,7 @@ class Vingd:
         :resource: ``vouchers/``
         :access: authorized users (ACL flag: ``voucher.add``)
         """
-        if expires is None:
-            expires = self.EXP_VOUCHER
-        if isinstance(expires, dict):
-            expires = datetime.now(tzutc())+timedelta(**expires)
+        expires = self.expand_timestamp(expires, default=self.EXP_VOUCHER)
         voucher = self.request('post', 'vouchers/', json.dumps({
             'amount': amount,
             'until': expires.isoformat(),
@@ -678,13 +696,17 @@ class Vingd:
         :type gid: ``alphanumeric(32)``
         :param gid:
             Filter by voucher Group ID. GID is localized to `uid_from`.
-        :type valid_after: ``string``
+        :type valid_after: ``datetime``/``dict``
         :param valid_after:
-            Voucher has to be valid after this timestamp (in ISO 8601 basic
-            format).
-        :type valid_before: ``string``
+            Voucher has to be valid after this timestamp. Absolute
+            (``datetime``) or relative (``dict``) timestamps are accepted. Valid
+            keys for relative timestamp dictionary are same as keyword arguments
+            for `datetime.timedelta` (``days``, ``seconds``, ``minutes``,
+            ``hours``, ``weeks``).
+        :type valid_before: ``datetime``/``dict``
         :param valid_before:
-            Voucher was valid until this timestamp (in ISO 8601 basic format).
+            Voucher was valid until this timestamp (for format, see the
+            `valid_after` above).
         :type last: ``bigint``
         :param last:
             The number of newest vouchers (that satisfy all other criteria) to
@@ -715,8 +737,12 @@ class Vingd:
         if uid_from: resource += '/from=%d' % int(uid_from)
         if uid_to: resource += '/to=%d' % int(uid_to)
         if gid: resource += '/gid=%s' % gid
-        if valid_after: resource += '/valid_after=%s' % valid_after
-        if valid_before: resource += '/valid_before=%s' % valid_before
+        if valid_after:
+            valid_after = self.expand_timestamp(valid_after)
+            resource += '/valid_after=%s' % valid_after.isoformat()
+        if valid_before:
+            valid_before = self.expand_timestamp(valid_before)
+            resource += '/valid_before=%s' % valid_before.isoformat()
         if first: resource += '/first=%d' % int(first)
         if last: resource += '/last=%d' % int(last)
         return self.request('get', resource)
@@ -747,20 +773,25 @@ class Vingd:
         :type gid: ``alphanumeric(32)``
         :param gid:
             Filter by voucher Group ID. GID is localized to `uid_from`.
-        :type valid_after: ``string``
+        :type valid_after: ``datetime``/``dict``
         :param valid_after:
-            Voucher has to be valid after this timestamp (in ISO 8601 basic
-            format).
-        :type valid_before: ``string``
+            Voucher has to be valid after this timestamp. Absolute
+            (``datetime``) or relative (``dict``) timestamps are accepted. Valid
+            keys for relative timestamp dictionary are same as keyword arguments
+            for `datetime.timedelta` (``days``, ``seconds``, ``minutes``,
+            ``hours``, ``weeks``).
+        :type valid_before: ``datetime``/``dict``
         :param valid_before:
-            Voucher was valid until this timestamp (in ISO 8601 basic format).
-        :type create_after: ``string``
+            Voucher was valid until this timestamp (for format, see the
+            `valid_after` above).
+        :type create_after: ``datetime``/``dict``
         :param create_after:
-            Voucher has to be created after this timestamp (in ISO 8601 basic
-            format).
-        :type create_before: ``string``
+            Voucher has to be created after this timestamp (for format, see the
+            `valid_after` above).
+        :type create_before: ``datetime``/``dict``
         :param create_before:
-            Voucher was created until this timestamp (in ISO 8601 basic format).
+            Voucher was created until this timestamp (for format, see the
+            `valid_after` above).
         :type last: ``bigint``
         :param last:
             The number of newest voucher entries (that satisfy all other
@@ -794,10 +825,18 @@ class Vingd:
         if uid_from: resource += '/from=%d' % int(uid_from)
         if uid_to: resource += '/to=%d' % int(uid_to)
         if gid: resource += '/gid=%s' % gid
-        if valid_after: resource += '/valid_after=%s' % valid_after
-        if valid_before: resource += '/valid_before=%s' % valid_before
-        if create_after: resource += '/create_after=%s' % create_after
-        if create_before: resource += '/create_before=%s' % create_before
+        if valid_after:
+            valid_after = self.expand_timestamp(valid_after)
+            resource += '/valid_after=%s' % valid_after.isoformat()
+        if valid_before:
+            valid_before = self.expand_timestamp(valid_before)
+            resource += '/valid_before=%s' % valid_before.isoformat()
+        if create_after:
+            create_after = self.expand_timestamp(create_after)
+            resource += '/create_after=%s' % create_after.isoformat()
+        if create_before:
+            create_before = self.expand_timestamp(create_before)
+            resource += '/create_before=%s' % create_before.isoformat()
         if first: resource += '/first=%d' % int(first)
         if last: resource += '/last=%d' % int(last)
         return self.request('get', resource)
@@ -821,13 +860,17 @@ class Vingd:
         :type gid: ``alphanumeric(32)``
         :param gid:
             Filter by voucher Group ID. GID is localized to `uid_from`.
-        :type valid_after: ``string``
+        :type valid_after: ``datetime``/``dict``
         :param valid_after:
-            Voucher has to be valid after this timestamp (in ISO 8601 basic
-            format).
-        :type valid_before: ``string``
+            Voucher has to be valid after this timestamp. Absolute
+            (``datetime``) or relative (``dict``) timestamps are accepted. Valid
+            keys for relative timestamp dictionary are same as keyword arguments
+            for `datetime.timedelta` (``days``, ``seconds``, ``minutes``,
+            ``hours``, ``weeks``).
+        :type valid_before: ``datetime``/``dict``
         :param valid_before:
-            Voucher was valid until this timestamp (in ISO 8601 basic format).
+            Voucher was valid until this timestamp (for format, see the
+            `valid_after` above).
         :type last: ``bigint``
         :param last:
             The number of newest vouchers (that satisfy all other criteria) to
@@ -862,8 +905,12 @@ class Vingd:
         if uid_from: resource += '/from=%d' % int(uid_from)
         if uid_to: resource += '/to=%d' % int(uid_to)
         if gid: resource += '/gid=%s' % gid
-        if valid_after: resource += '/valid_after=%s' % valid_after
-        if valid_before: resource += '/valid_before=%s' % valid_before
+        if valid_after:
+            valid_after = self.expand_timestamp(valid_after)
+            resource += '/valid_after=%s' % valid_after.isoformat()
+        if valid_before:
+            valid_before = self.expand_timestamp(valid_before)
+            resource += '/valid_before=%s' % valid_before.isoformat()
         if first: resource += '/first=%d' % int(first)
         if last: resource += '/last=%d' % int(last)
         return self.request('delete', resource, json.dumps({'revoke': True}))
