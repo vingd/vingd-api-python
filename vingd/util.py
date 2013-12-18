@@ -152,18 +152,26 @@ def safeformat(format_string, *args):
     
     Format pattern is `{[index]:type}`, where `index` is optional argument
     index, and `type` is one of the predefined typenames (currently: `int`,
-    `hex`, `str`).
+    `hex`, `str`, `ident`).
     """
     
     def hex(x):
+        """Allow hexadecimal digits."""
         if re.match('^[a-fA-F\d]*$', str(x)):
             return str(x)
         raise ValueError("Non-hex digits in hex number.")
     
+    def identifier(x):
+        """Allow letters, digits, underscore and minus/dash."""
+        if re.match('^[-\w]*$', str(x)):
+            return str(x)
+        raise ValueError("Non-identifier characters in string.")
+    
     converters = {
         'int': int,
         'hex': hex,
-        'str': str
+        'str': str,
+        'ident': identifier
     }
     
     argidx = count(0)
