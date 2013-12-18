@@ -20,7 +20,7 @@ v = Vingd(username="test@vingd.com", password="123", endpoint=Vingd.URL_ENDPOINT
 profile = v.get_user_profile()
 print 'I (%s) registered on %s.' % (profile['name'], profile['timestamp_created'])
 
-balance = v.get_user_balance()
+balance = v.get_account_balance()
 print 'My balance is VINGD %.2f.' % (balance/100.0)
 
 #

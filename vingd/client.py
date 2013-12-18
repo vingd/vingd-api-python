@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
 from .response import Codes
-from .util import quote, hash, safeformat
+from .util import quote, hash, safeformat, now
 from . import __version__
 
 
