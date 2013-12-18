@@ -1,6 +1,6 @@
-import hashlib
-import datetime
 import re
+from hashlib import sha1
+from datetime import datetime, timedelta, tzinfo
 from itertools import count
 
 try:
@@ -16,20 +16,33 @@ except ImportError:
 
 
 def hash(msg):
-    return hashlib.sha1(msg.encode('utf-8')).hexdigest() if msg else None
+    return sha1(msg.encode('utf-8')).hexdigest() if msg else None
 
 
-class tzutc(datetime.tzinfo):
+class tzutc(tzinfo):
     '''UTC time zone info.'''
     
     def utcoffset(self, dt):
-        return datetime.timedelta(0)
+        return timedelta(0)
     
     def dst(self, dt):
-        return datetime.timedelta(0)
+        return timedelta(0)
     
     def tzname(self, dt):
         return "UTC"
+
+
+def localnow():
+    """Local time without time zone (local time @ local time zone)."""
+    return datetime.now()
+
+def utcnow():
+    """Current UTC/GMT time without time zone (local time @ UTC)."""
+    return datetime.utcnow()
+
+def now():
+    """Current UTC/GMT time with time zone."""
+    return datetime.now(tzutc())
 
 
 def parse_duration(string):
