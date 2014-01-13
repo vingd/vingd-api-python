@@ -44,6 +44,20 @@ def now():
     """Current UTC/GMT time with time zone."""
     return datetime.now(tzutc())
 
+def absdatetime(ts, default=None):
+    """Accepts relative timestamp (`timedelta` or `timedelta`-supported ``dict``
+    fmt), absolute `datetime`, or failbacks to `default`. Returns `datetime` (or
+    `None` if `datetime` can not be derived from `ts`)."""
+    if ts is None:
+        ts = default
+    if isinstance(ts, dict):
+        ts = timedelta(**ts)
+    if isinstance(ts, timedelta):
+        ts = now() + ts
+    if isinstance(ts, datetime):
+        return ts
+    return None
+
 
 def parse_duration(string):
     '''
@@ -167,11 +181,23 @@ def safeformat(format_string, *args):
             return str(x)
         raise ValueError("Non-identifier characters in string.")
     
+    def iso(x):
+        if not isinstance(x, datetime):
+            raise ValueError("Datetime expected.")
+        return x.isoformat()
+    
+    def isobasic(x):
+        if not isinstance(x, datetime):
+            raise ValueError("Datetime expected.")
+        return x.strftime("%Y%m%dT%H%M%S%z")
+    
     converters = {
         'int': int,
         'hex': hex,
         'str': str,
-        'ident': identifier
+        'ident': identifier,
+        'iso': iso,
+        'isobasic': isobasic
     }
     
     argidx = count(0)
