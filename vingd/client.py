@@ -139,6 +139,14 @@ class Vingd:
         assert isinstance(ts, datetime)
         return ts
     
+    @staticmethod
+    def isodate(ts, default=None):
+        """Accepts relative timestamp dict (`timedelta` fmt), absolute
+        `datetime`, or failbacks to `default`. Returns ISO8601 formatted
+        timestamp."""
+        dt = Vingd.expand_timestamp(ts, default)
+        return dt.isoformat()
+    
     def create_object(self, name, url):
         """
         CREATES a single object in Vingd Object registry.
@@ -304,19 +312,19 @@ class Vingd:
         :resource: ``objects/<oid>/orders/``
         :access: authorized users
         """
-        expires = self.expand_timestamp(expires, default=self.EXP_ORDER)
+        expires = self.isodate(expires, default=self.EXP_ORDER)
         orders = self.request(
             'post',
             safeformat('objects/{:int}/orders/', oid),
             json.dumps({
                 'price': price,
-                'order_expires': expires.isoformat(),
+                'order_expires': expires,
                 'context': context
             }))
         orderid = self._extract_id_from_batch_response(orders)
         return {
             'id': orderid,
-            'expires': expires.isoformat(),
+            'expires': expires,
             'context': context,
             'object': {
                 'id': oid,
@@ -457,8 +465,8 @@ class Vingd:
         """
         resource = 'registry/objects'
         if oid: resource += '/%d' % int(oid)
-        if since: resource += '/since=%s' % self.expand_timestamp(since).isoformat()
-        if until: resource += '/until=%s' % self.expand_timestamp(until).isoformat()
+        if since: resource += '/since=%s' % self.isodate(since)
+        if until: resource += '/until=%s' % self.isodate(until)
         if first: resource += '/first=%d' % int(first)
         if last: resource += '/last=%d' % int(last)
         return self.request('get', resource)
@@ -662,10 +670,10 @@ class Vingd:
         :resource: ``vouchers/``
         :access: authorized users (ACL flag: ``voucher.add``)
         """
-        expires = self.expand_timestamp(expires, default=self.EXP_VOUCHER)
+        expires = self.isodate(expires, default=self.EXP_VOUCHER)
         voucher = self.request('post', 'vouchers/', json.dumps({
             'amount': amount,
-            'until': expires.isoformat(),
+            'until': expires,
             'message': message,
             'gid': gid
         }))
@@ -737,12 +745,8 @@ class Vingd:
         if uid_from: resource += safeformat('/from={:int}', uid_from)
         if uid_to: resource += safeformat('/to={:int}', uid_to)
         if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after:
-            valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after='+valid_after.isoformat()
-        if valid_before:
-            valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before='+valid_before.isoformat()
+        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
+        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
         if first: resource += safeformat('/first={:int}', first)
         if last: resource += safeformat('/last={:int}', last)
         return self.request('get', resource)
@@ -825,18 +829,10 @@ class Vingd:
         if uid_from: resource += safeformat('/from={:int}', uid_from)
         if uid_to: resource += safeformat('/to={:int}', uid_to)
         if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after:
-            valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after='+valid_after.isoformat()
-        if valid_before:
-            valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before='+valid_before.isoformat()
-        if create_after:
-            create_after = self.expand_timestamp(create_after)
-            resource += '/create_after='+create_after.isoformat()
-        if create_before:
-            create_before = self.expand_timestamp(create_before)
-            resource += '/create_before='+create_before.isoformat()
+        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
+        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
+        if create_after: resource += '/create_after='+self.isodate(create_after)
+        if create_before: resource += '/create_before='+self.isodate(create_before)
         if first: resource += safeformat('/first={:int}', first)
         if last: resource += safeformat('/last={:int}', last)
         return self.request('get', resource)
@@ -905,12 +901,8 @@ class Vingd:
         if uid_from: resource += safeformat('/from={:int}', uid_from)
         if uid_to: resource += safeformat('/to={:int}', uid_to)
         if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after:
-            valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after='+valid_after.isoformat()
-        if valid_before:
-            valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before='+valid_before.isoformat()
+        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
+        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
         if first: resource += safeformat('/first={:int}', first)
         if last: resource += safeformat('/last={:int}', last)
         return self.request('delete', resource, json.dumps({'revoke': True}))
