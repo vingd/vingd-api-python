@@ -733,18 +733,18 @@ class Vingd:
         :access: authorized users (ACL flag: ``voucher.get``)
         """
         resource = 'vouchers'
-        if vid_encoded: resource += '/%s' % vid_encoded
-        if uid_from: resource += '/from=%d' % int(uid_from)
-        if uid_to: resource += '/to=%d' % int(uid_to)
-        if gid: resource += '/gid=%s' % gid
+        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
+        if uid_from: resource += safeformat('/from={:int}', uid_from)
+        if uid_to: resource += safeformat('/to={:int}', uid_to)
+        if gid: resource += safeformat('/gid={:ident}', gid)
         if valid_after:
             valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after=%s' % valid_after.isoformat()
+            resource += '/valid_after='+valid_after.isoformat()
         if valid_before:
             valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before=%s' % valid_before.isoformat()
-        if first: resource += '/first=%d' % int(first)
-        if last: resource += '/last=%d' % int(last)
+            resource += '/valid_before='+valid_before.isoformat()
+        if first: resource += safeformat('/first={:int}', first)
+        if last: resource += safeformat('/last={:int}', last)
         return self.request('get', resource)
     
     def get_vouchers_history(self, vid_encoded=None, vid=None, action=None,
@@ -819,26 +819,26 @@ class Vingd:
         :access: authorized users (ACL flag: ``voucher.history``)
         """
         resource = 'vouchers/history'
-        if vid_encoded: resource += '/%s' % vid_encoded
-        if vid: resource += '/vid=%d' % long(vid)
-        if action: resource += '/action=%s' % action
-        if uid_from: resource += '/from=%d' % int(uid_from)
-        if uid_to: resource += '/to=%d' % int(uid_to)
-        if gid: resource += '/gid=%s' % gid
+        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
+        if vid: resource += safeformat('/vid={:int}', vid)
+        if action: resource += safeformat('/action={:ident}', action)
+        if uid_from: resource += safeformat('/from={:int}', uid_from)
+        if uid_to: resource += safeformat('/to={:int}', uid_to)
+        if gid: resource += safeformat('/gid={:ident}', gid)
         if valid_after:
             valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after=%s' % valid_after.isoformat()
+            resource += '/valid_after='+valid_after.isoformat()
         if valid_before:
             valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before=%s' % valid_before.isoformat()
+            resource += '/valid_before='+valid_before.isoformat()
         if create_after:
             create_after = self.expand_timestamp(create_after)
-            resource += '/create_after=%s' % create_after.isoformat()
+            resource += '/create_after='+create_after.isoformat()
         if create_before:
             create_before = self.expand_timestamp(create_before)
-            resource += '/create_before=%s' % create_before.isoformat()
-        if first: resource += '/first=%d' % int(first)
-        if last: resource += '/last=%d' % int(last)
+            resource += '/create_before='+create_before.isoformat()
+        if first: resource += safeformat('/first={:int}', first)
+        if last: resource += safeformat('/last={:int}', last)
         return self.request('get', resource)
     
     def revoke_vouchers(self, vid_encoded=None,
@@ -901,16 +901,16 @@ class Vingd:
         :access: authorized users (ACL flag: ``voucher.revoke``)
         """
         resource = 'vouchers'
-        if vid_encoded: resource += '/%s' % vid_encoded
-        if uid_from: resource += '/from=%d' % int(uid_from)
-        if uid_to: resource += '/to=%d' % int(uid_to)
-        if gid: resource += '/gid=%s' % gid
+        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
+        if uid_from: resource += safeformat('/from={:int}', uid_from)
+        if uid_to: resource += safeformat('/to={:int}', uid_to)
+        if gid: resource += safeformat('/gid={:ident}', gid)
         if valid_after:
             valid_after = self.expand_timestamp(valid_after)
-            resource += '/valid_after=%s' % valid_after.isoformat()
+            resource += '/valid_after='+valid_after.isoformat()
         if valid_before:
             valid_before = self.expand_timestamp(valid_before)
-            resource += '/valid_before=%s' % valid_before.isoformat()
-        if first: resource += '/first=%d' % int(first)
-        if last: resource += '/last=%d' % int(last)
+            resource += '/valid_before='+valid_before.isoformat()
+        if first: resource += safeformat('/first={:int}', first)
+        if last: resource += safeformat('/last={:int}', last)
         return self.request('delete', resource, json.dumps({'revoke': True}))
