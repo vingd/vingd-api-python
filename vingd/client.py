@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
 from .response import Codes
-from .util import quote, hash, safeformat, now
+from .util import quote, hash, safeformat, now, absdatetime
 from . import __version__
 
 
@@ -127,25 +127,24 @@ class Vingd:
             # new-style simplified api response
             id = r[name]
         return int(id)
-    
-    @staticmethod
-    def expand_timestamp(ts, default=None):
-        """Expand relative timestamp (``dict`` with `timedelta`-supported keys)
-        to absolute with `default` failback. Ensure `datetime` is returned."""
-        if ts is None:
-            ts = default
-        if isinstance(ts, dict):
-            ts = now() + timedelta(**ts)
-        assert isinstance(ts, datetime)
-        return ts
-    
-    @staticmethod
-    def isodate(ts, default=None):
-        """Accepts relative timestamp dict (`timedelta` fmt), absolute
-        `datetime`, or failbacks to `default`. Returns ISO8601 formatted
-        timestamp."""
-        dt = Vingd.expand_timestamp(ts, default)
-        return dt.isoformat()
+
+    def kvpath(self, base, *pa, **kw):
+        """Key-value query url builder (of the form: "base/v0/k1=v1/k2=v2"). """
+        def fmt(vtuple):
+            typ, val = vtuple
+            if not val is None:
+                return safeformat("{:%s}"%typ, val)
+            return None
+        parts = [base]
+        for v in pa:
+            fv = fmt(v)
+            if not fv is None:
+                parts.append(quote(fv))
+        for k,v in kw.iteritems():
+            fv = fmt(v)
+            if not fv is None:
+                parts.append(quote(k+"="+fv))
+        return "/".join(parts)
     
     def create_object(self, name, url):
         """
@@ -312,13 +311,13 @@ class Vingd:
         :resource: ``objects/<oid>/orders/``
         :access: authorized users
         """
-        expires = self.isodate(expires, default=self.EXP_ORDER)
+        expires = absdatetime(expires, default=self.EXP_ORDER)
         orders = self.request(
             'post',
             safeformat('objects/{:int}/orders/', oid),
             json.dumps({
                 'price': price,
-                'order_expires': expires,
+                'order_expires': expires.isoformat(),
                 'context': context
             }))
         orderid = self._extract_id_from_batch_response(orders)
@@ -463,12 +462,10 @@ class Vingd:
         :access: authorized users (only objects owned by the authenticated user
             are returned)
         """
-        resource = 'registry/objects'
-        if oid: resource += '/%d' % int(oid)
-        if since: resource += '/since=%s' % self.isodate(since)
-        if until: resource += '/until=%s' % self.isodate(until)
-        if first: resource += '/first=%d' % int(first)
-        if last: resource += '/last=%d' % int(last)
+        resource = self.kvpath('registry/objects', ('int', oid),
+                               since=('isobasic', absdatetime(since)),
+                               until=('isobasic', absdatetime(until)),
+                               first=('int', first), last=('int', last))
         return self.request('get', resource)
     
     def get_object(self, oid):
@@ -670,7 +667,7 @@ class Vingd:
         :resource: ``vouchers/``
         :access: authorized users (ACL flag: ``voucher.add``)
         """
-        expires = self.isodate(expires, default=self.EXP_VOUCHER)
+        expires = absdatetime(expires, default=self.EXP_VOUCHER).isoformat()
         voucher = self.request('post', 'vouchers/', json.dumps({
             'amount': amount,
             'until': expires,
@@ -740,15 +737,19 @@ class Vingd:
             ``[/last=<last>][/first=<first>]``
         :access: authorized users (ACL flag: ``voucher.get``)
         """
-        resource = 'vouchers'
-        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
-        if uid_from: resource += safeformat('/from={:int}', uid_from)
-        if uid_to: resource += safeformat('/to={:int}', uid_to)
-        if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
-        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
-        if first: resource += safeformat('/first={:int}', first)
-        if last: resource += safeformat('/last={:int}', last)
+        resource = self.kvpath(
+            'vouchers',
+            ('ident', vid_encoded),
+            **{
+                'from': ('int', uid_from),
+                'to': ('int', uid_to),
+                'gid': ('ident', gid),
+                'valid_after': ('isobasic', absdatetime(valid_after)),
+                'valid_before': ('isobasic', absdatetime(valid_before)),
+                'first': ('int', first),
+                'last': ('int', last)
+            }
+        )
         return self.request('get', resource)
     
     def get_vouchers_history(self, vid_encoded=None, vid=None, action=None,
@@ -822,19 +823,23 @@ class Vingd:
             ``[/gid=<group_id>]``
         :access: authorized users (ACL flag: ``voucher.history``)
         """
-        resource = 'vouchers/history'
-        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
-        if vid: resource += safeformat('/vid={:int}', vid)
-        if action: resource += safeformat('/action={:ident}', action)
-        if uid_from: resource += safeformat('/from={:int}', uid_from)
-        if uid_to: resource += safeformat('/to={:int}', uid_to)
-        if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
-        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
-        if create_after: resource += '/create_after='+self.isodate(create_after)
-        if create_before: resource += '/create_before='+self.isodate(create_before)
-        if first: resource += safeformat('/first={:int}', first)
-        if last: resource += safeformat('/last={:int}', last)
+        resource = self.kvpath(
+            'vouchers/history',
+            ('ident', vid_encoded),
+            **{
+                'vid': ('int', vid),
+                'action': ('ident', action),
+                'from': ('int', uid_from),
+                'to': ('int', uid_to),
+                'gid': ('ident', gid),
+                'valid_after': ('isobasic', absdatetime(valid_after)),
+                'valid_before': ('isobasic', absdatetime(valid_before)),
+                'create_after': ('isobasic', absdatetime(create_after)),
+                'create_before': ('isobasic', absdatetime(create_before)),
+                'first': ('int', first),
+                'last': ('int', last)
+            }
+        )
         return self.request('get', resource)
     
     def revoke_vouchers(self, vid_encoded=None,
@@ -896,13 +901,17 @@ class Vingd:
             ``[/last=<last>][/first=<first>]``
         :access: authorized users (ACL flag: ``voucher.revoke``)
         """
-        resource = 'vouchers'
-        if vid_encoded: resource += safeformat('/{:ident}', vid_encoded)
-        if uid_from: resource += safeformat('/from={:int}', uid_from)
-        if uid_to: resource += safeformat('/to={:int}', uid_to)
-        if gid: resource += safeformat('/gid={:ident}', gid)
-        if valid_after: resource += '/valid_after='+self.isodate(valid_after)
-        if valid_before: resource += '/valid_before='+self.isodate(valid_before)
-        if first: resource += safeformat('/first={:int}', first)
-        if last: resource += safeformat('/last={:int}', last)
+        resource = self.kvpath(
+            'vouchers',
+            ('ident', vid_encoded),
+            **{
+                'from': ('int', uid_from),
+                'to': ('int', uid_to),
+                'gid': ('ident', gid),
+                'valid_after': ('isobasic', absdatetime(valid_after)),
+                'valid_before': ('isobasic', absdatetime(valid_before)),
+                'first': ('int', first),
+                'last': ('int', last)
+            }
+        )
         return self.request('delete', resource, json.dumps({'revoke': True}))
