@@ -557,7 +557,7 @@ class Vingd:
                 'autocommit': True
             }))
     
-    def authorized_create_user(self, identities, primary, permissions=None):
+    def authorized_create_user(self, identities=None, primary=None, permissions=None):
         """Creates Vingd user (profile & account), links it with the provided
         identities (to be verified later), and sets the delegate-user
         permissions (creator being the delegate). Returns Vingd user's `huid`
@@ -570,6 +570,9 @@ class Vingd:
                 primary="facebook",
                 delegate_permissions=["get.account.balance", "purchase.object"]
             )
+        
+        If `identities` and `primary` are unspecified, a "zombie" account is
+        created (i.e. account with no identities associated, user-unreachable).
         
         :rtype: ``string``
         :returns: ``<huid>``
