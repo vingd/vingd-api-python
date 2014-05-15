@@ -575,8 +575,8 @@ class Vingd:
         account is created (i.e. account with no identities associated,
         user-unreachable).
         
-        :rtype: ``string``
-        :returns: ``<huid>``
+        :rtype: ``dict``
+        :returns: ``{'huid': <huid>}``
         :raises GeneralException:
         :resource: ``id/objects/<oid>/purchases``
         

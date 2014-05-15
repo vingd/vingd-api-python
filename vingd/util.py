@@ -166,7 +166,7 @@ def safeformat(format_string, *args):
     
     Format pattern is `{[index]:type}`, where `index` is optional argument
     index, and `type` is one of the predefined typenames (currently: `int`,
-    `hex`, `str`, `ident`).
+    `hex`, `str`, `ident`, `iso`, `isobasic`).
     """
     
     def hex(x):
