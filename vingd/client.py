@@ -568,11 +568,12 @@ class Vingd:
             vingd.authorized_create_user(
                 identities={"facebook": "12312312", "mail": "user@example.com"},
                 primary="facebook",
-                delegate_permissions=["get.account.balance", "purchase.object"]
+                permissions=["get.account.balance", "purchase.object"]
             )
         
-        If `identities` and `primary` are unspecified, a "zombie" account is
-        created (i.e. account with no identities associated, user-unreachable).
+        If `identities` and `primary` are unspecified, a "zombie" ("headless")
+        account is created (i.e. account with no identities associated,
+        user-unreachable).
         
         :rtype: ``string``
         :returns: ``<huid>``
