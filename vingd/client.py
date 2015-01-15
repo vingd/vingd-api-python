@@ -2,7 +2,6 @@
 :newfield access: Access
 :newfield resource: Resource path
 """
-
 try:
     import simplejson as json
 except ImportError:
@@ -13,8 +12,12 @@ try:
 except ImportError:
     import http.client as httplib
 
+try:
+    from urlparse import urljoin, urlparse
+except ImportError:
+    from urllib.parse import urljoin, urlparse
+
 import base64
-from urlparse import urljoin, urlparse
 from datetime import datetime, timedelta
 
 from .exceptions import Forbidden, GeneralException, InternalError, InvalidData, NotFound
@@ -69,8 +72,9 @@ class Vingd:
         port = 443
         path = urljoin(endpoint.path+'/', subpath)
         
+        creds = "%s:%s" % (self.api_key, self.api_secret)
         headers = {
-            'Authorization': 'Basic ' + base64.b64encode("%s:%s" % (self.api_key, self.api_secret)),
+            'Authorization': b'Basic ' + base64.b64encode(creds.encode('ascii')),
             'User-Agent': self.USER_AGENT
         }
         try:
@@ -140,7 +144,7 @@ class Vingd:
             fv = fmt(v)
             if not fv is None:
                 parts.append(quote(fv))
-        for k,v in kw.iteritems():
+        for k,v in kw.items():
             fv = fmt(v)
             if not fv is None:
                 parts.append(quote(k+"="+fv))

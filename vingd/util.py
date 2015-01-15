@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, tzinfo
 from itertools import count
 
 try:
-    from urllib.parse import quote
+    from urllib.parse import quote as base_quote
+    def quote(url, safe='/=:%{}'):
+        return base_quote(url, safe)
 except ImportError:
     # python2 sucks at unicoding
     from urllib import quote as ascii_quote
